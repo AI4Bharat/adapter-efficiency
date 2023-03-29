@@ -1,260 +1,385 @@
-from transformers import AutoModelForTokenClassification, AutoTokenizer, AutoConfig
-from transformers import AutoConfig, AutoModelForTokenClassification
-from datasets import load_dataset
-from torch.utils.data import Dataset
-import torch
-import torch.nn.functional as F
-from tqdm.notebook import tqdm
-from torch import nn
-import copy
-from datasets import load_dataset
+from datasets import load_dataset, load_metric
+from transformers import AutoTokenizer, EvalPrediction
+from transformers import AutoModelForQuestionAnswering
+from tqdm.auto import tqdm
 from transformers import TrainingArguments
-from transformers import DataCollatorForTokenClassification
-from transformers import TrainingArguments, Trainer, EvalPrediction
-from datasets import load_metric
+from transformers import Trainer
+import collections
+from transformers import default_data_collator
+import torch
 import numpy as np
 from transformers import EarlyStoppingCallback, IntervalStrategy
 import argparse
+import os
 import wandb
-#The labels for the NER task and the dictionaries to map the to ids or 
-#the other way around
+
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--seed", type=int, default=42)
-parser.add_argument("--batch_size", type=int, default=16)
+parser.add_argument("--batch_size", type=int, default=32)
 parser.add_argument("--learning_rate", type=float, default=3e-5)
 parser.add_argument("--weight_decay", type=float, default=0.1)
-parser.add_argument("--max_seq_length", type=int, default=256)
-parser.add_argument("--run_name", default="its_okay")
 
 parser.add_argument("--model_name", default="xlmr-b", help= "model type [xlmr-b | xlmr-l| indicbert]")
 
-args = parser.parse_args()
-labels = ["O", "B-PER", "I-PER", "B-ORG", "I-ORG", "B-LOC", "I-LOC"]
-id_2_label = {id_: label for id_, label in enumerate(labels)}
-label_2_id = {label: id_ for id_, label in enumerate(labels)}
 
+args = parser.parse_args()
+
+
+metric = load_metric("squad")
+
+
+
+dataset_squad =  load_dataset("squad")
+dataset_squad = dataset_squad.shuffle(seed=42)
+print(dataset_squad)
+
+#dataset_squad['train'] = dataset_squad['train'].shard(num_shards=100, index=0)
+#dataset_squad['validation'] = dataset_squad['validation'].shard(num_shards=100, index=0)
+#print(dataset_squad)
 if args.model_name == "indicbert":
-    wandb.init(project="Indicbert_mlm_only_xnli", entity="nandinimundra", name = f"{args.run_name}_{args.model_name}_{args.adap_drop}_{args.batch_size}")
+    wandb.init(project="Indicbert_mlm_only_xnli", entity="nandinimundra", name = f"{args.model_name}_{args.batch_size}_{args.learning_rate}")
     model_name = 'ai4bharat/IndicBERT-MLM-only'
-    tokenizer = AutoTokenizer.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/xnli/tok_InBert_mlm_only/", use_auth_token=True)
-    config = AutoConfig.from_pretrained(
-        "/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/xnli/config_InBert_mlm_only_xnli_adap/",
-        num_labels=3,
-        id2label={ 0: "entailment", 1: "neutral", 2: "contradiction"},
-        use_auth_token=True,
-    )
-    model = AutoModelForTokenClassification.from_pretrained(
+    tokenizer = AutoTokenizer.from_pretrained("ai4bharat/IndicBERT-MLM-only", use_auth_token=True)
+
+    model = AutoModelForQuestionAnswering.from_pretrained(
         "/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/xnli/model_InBert_mlm_only_xnli_adap/",
-        config=config,
-        use_auth_token=True,
     )
 
 elif args.model_name == "xlmr-b":
-    wandb.init(project="xlmr_base_ner", entity="nandinimundra", name = f"its_ok_{args.model_name}_{args.batch_size}_{args.learning_rate}")
-    model_name = 'xlm-roberta-base'
+    wandb.init(project="xlmr_base_qa", entity="nandinimundra", name = f"its_ok_{args.model_name}_{args.batch_size}_{args.learning_rate}")
+    #model_name = 'ai4bharat/IndicBERT-MLM-only'
     tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-base", use_auth_token=True)
-    config = AutoConfig.from_pretrained(model_name, num_labels=len(labels), label2id=label_2_id, id2label=id_2_label)
-    model = AutoModelForTokenClassification.from_pretrained(model_name, config=config)
-
+    model = AutoModelForQuestionAnswering.from_pretrained(
+        "xlm-roberta-base"
+    )
 elif args.model_name == "xlmr-l":
-    wandb.init(project="xlmr_large_ner", entity="nandinimundra", name = f"{args.model_name}_its_ok_{args.batch_size}_{args.learning_rate}")
-    model_name = 'xlm-roberta-large'
+    wandb.init(project="xlmr_large_qa", entity="nandinimundra", name = f"its_ok_{args.model_name}_{args.batch_size}_{args.learning_rate}")
+    #model_name = 'ai4bharat/IndicBERT-MLM-only'
     tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-large", use_auth_token=True)
-    config = AutoConfig.from_pretrained(model_name, num_labels=len(labels), label2id=label_2_id, id2label=id_2_label)
-    model = AutoModelForTokenClassification.from_pretrained(model_name, config=config)
+    
+    model = AutoModelForQuestionAnswering.from_pretrained(
+        "xlm-roberta-large",
+    )
 
+
+max_length = 384
+stride = 128
+n_best_size = 20
+squad_v2 = False
+max_answer_length = 30
+predicted_answers = []
+n_best = 20
+
+
+def preprocess_training_examples(examples):
+    questions = [q.strip() for q in examples["question"]]
+    inputs = tokenizer(
+        questions,
+        examples["context"],
+        max_length=max_length,
+        truncation="only_second",
+        stride=stride,
+        return_overflowing_tokens=True,
+        return_offsets_mapping=True,
+        padding="max_length",
+    )
+
+    offset_mapping = inputs.pop("offset_mapping")
+    sample_map = inputs.pop("overflow_to_sample_mapping")
+    answers = examples["answers"]
+    start_positions = []
+    end_positions = []
+
+    for i, offset in enumerate(offset_mapping):
+        sample_idx = sample_map[i]
+        answer = answers[sample_idx]
+        start_char = answer["answer_start"][0]
+        end_char = answer["answer_start"][0] + len(answer["text"][0])
+        sequence_ids = inputs.sequence_ids(i)
+
+        # Find the start and end of the context
+        idx = 0
+        while sequence_ids[idx] != 1:
+            idx += 1
+        context_start = idx
+        while sequence_ids[idx] == 1:
+            idx += 1
+        context_end = idx - 1
+
+        # If the answer is not fully inside the context, label is (0, 0)
+        if offset[context_start][0] > start_char or offset[context_end][1] < end_char:
+            start_positions.append(0)
+            end_positions.append(0)
+        else:
+            # Otherwise it's the start and end token positions
+            idx = context_start
+            while idx <= context_end and offset[idx][0] <= start_char:
+                idx += 1
+            start_positions.append(idx - 1)
+
+            idx = context_end
+            while idx >= context_start and offset[idx][1] >= end_char:
+                idx -= 1
+            end_positions.append(idx + 1)
+
+    inputs["start_positions"] = start_positions
+    inputs["end_positions"] = end_positions
+    return inputs
+
+
+train_dataset = dataset_squad["train"].map(
+    preprocess_training_examples,
+    batched=True,
+    remove_columns=dataset_squad["train"].column_names,
+)
+
+def preprocess_validation_examples(examples):
+    questions = [q.strip() for q in examples["question"]]
+    inputs = tokenizer(
+        questions,
+        examples["context"],
+        max_length=max_length,
+        truncation="only_second",
+        stride=stride,
+        return_overflowing_tokens=True,
+        return_offsets_mapping=True,
+        padding="max_length",
+    )
+
+    sample_map = inputs.pop("overflow_to_sample_mapping")
+    example_ids = []
+
+    for i in range(len(inputs["input_ids"])):
+        sample_idx = sample_map[i]
+        example_ids.append(examples["id"][sample_idx])
+
+        sequence_ids = inputs.sequence_ids(i)
+        offset = inputs["offset_mapping"][i]
+        inputs["offset_mapping"][i] = [
+            o if sequence_ids[k] == 1 else None for k, o in enumerate(offset)
+        ]
+
+    inputs["example_id"] = example_ids
+    return inputs
+
+
+validation_dataset = dataset_squad["validation"].map(
+    preprocess_validation_examples,
+    batched=True,
+    remove_columns=dataset_squad["validation"].column_names,
+)
+validation_dataset_train = dataset_squad["validation"].map(
+    preprocess_training_examples,
+    batched=True,
+    remove_columns=dataset_squad["validation"].column_names,
+)
+print(len(dataset_squad["validation"]), len(validation_dataset))
+print("validation dataset after tokenizing ", validation_dataset)
+#print(validation_dataset[0])
+
+def compute_metrics(start_logits, end_logits, features, examples):
+    print("bla bla in compute metric")
+    example_to_features = collections.defaultdict(list)
+    for idx, feature in enumerate(features):
+        example_to_features[feature["example_id"]].append(idx)
+
+    predicted_answers = []
+    for example in tqdm(examples):
+        example_id = example["id"]
+        context = example["context"]
+        answers = []
+
+        # Loop through all features associated with that example
+        for feature_index in example_to_features[example_id]:
+            start_logit = start_logits[feature_index]
+            end_logit = end_logits[feature_index]
+            offsets = features[feature_index]["offset_mapping"]
+
+            start_indexes = np.argsort(start_logit)[-1 : -n_best - 1 : -1].tolist()
+            end_indexes = np.argsort(end_logit)[-1 : -n_best - 1 : -1].tolist()
+            for start_index in start_indexes:
+                for end_index in end_indexes:
+                    # Skip answers that are not fully in the context
+                    if offsets[start_index] is None or offsets[end_index] is None:
+                        continue
+                    # Skip answers with a length that is either < 0 or > max_answer_length
+                    if (
+                        end_index < start_index
+                        or end_index - start_index + 1 > max_answer_length
+                    ):
+                        continue
+
+                    answer = {
+                        "text": context[offsets[start_index][0] : offsets[end_index][1]],
+                        "logit_score": start_logit[start_index] + end_logit[end_index],
+                    }
+                    answers.append(answer)
+
+        # Select the answer with the best score
+        if len(answers) > 0:
+            best_answer = max(answers, key=lambda x: x["logit_score"])
+            predicted_answers.append(
+                {"id": example_id, "prediction_text": best_answer["text"]}
+            )
+        else:
+            predicted_answers.append({"id": example_id, "prediction_text": ""})
+
+    theoretical_answers = [{"id": ex["id"], "answers": ex["answers"]} for ex in examples]
+    return metric.compute(predictions=predicted_answers, references=theoretical_answers)
+
+
+
+def compute_metrics_2(p: EvalPrediction):
+
+    print("bla bla in compute metric 2")
+
+    predictions, _, _ = trainer.predict(validation_dataset)
+    start_logits, end_logits = predictions
+    
+    #start_logits, end_logits = p.predictions
+    example_to_features = collections.defaultdict(list)
+    for idx, feature in enumerate(validation_dataset):
+        example_to_features[feature["example_id"]].append(idx)
+
+    predicted_answers = []
+    for example in tqdm(dataset_squad["validation"]):
+        example_id = example["id"]
+        context = example["context"]
+        answers = []
+
+        # Loop through all features associated with that example
+        for feature_index in example_to_features[example_id]:
+            start_logit = start_logits[feature_index]
+            end_logit = end_logits[feature_index]
+            offsets = validation_dataset[feature_index]["offset_mapping"]
+
+            start_indexes = np.argsort(start_logit)[-1 : -n_best - 1 : -1].tolist()
+            end_indexes = np.argsort(end_logit)[-1 : -n_best - 1 : -1].tolist()
+            for start_index in start_indexes:
+                for end_index in end_indexes:
+                    # Skip answers that are not fully in the context
+                    if offsets[start_index] is None or offsets[end_index] is None:
+                        continue
+                    # Skip answers with a length that is either < 0 or > max_answer_length
+                    if (
+                        end_index < start_index
+                        or end_index - start_index + 1 > max_answer_length
+                    ):
+                        continue
+
+                    answer = {
+                        "text": context[offsets[start_index][0] : offsets[end_index][1]],
+                        "logit_score": start_logit[start_index] + end_logit[end_index],
+                    }
+                    answers.append(answer)
+
+        # Select the answer with the best score
+        if len(answers) > 0:
+            best_answer = max(answers, key=lambda x: x["logit_score"])
+            predicted_answers.append(
+                {"id": example_id, "prediction_text": best_answer["text"]}
+            )
+        else:
+            predicted_answers.append({"id": example_id, "prediction_text": ""})
+
+    theoretical_answers = [{"id": ex["id"], "answers": ex["answers"]} for ex in dataset_squad["validation"]]
+    m = metric.compute(predictions=predicted_answers, references=theoretical_answers)
+    # add 'eval_' to the metric name to solve bug with trainer
+    return {f"eval_{k}" if "eval_" not in k else k: v for k, v in m.items()}
+    #return metric.compute(predictions=predicted_answers, references=theoretical_answers)
 
 
 
 pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-print(pytorch_total_params)
-wandb.log({"no_of_parameter": pytorch_total_params})
-
-#ar, bg, de, el, es, fr, hi, ru, sw, th, tr, ur, vi, zh
-datasets = load_dataset('wikiann', 'en')
-datasets = datasets.shuffle(seed=5)
-dataset_ar = load_dataset('wikiann', 'ar')
-dataset_bg = load_dataset('wikiann', 'bg')
-dataset_de = load_dataset('wikiann', 'de')
-dataset_el = load_dataset('wikiann', 'el')
-dataset_es = load_dataset('wikiann', 'es')
-dataset_fr = load_dataset('wikiann', 'fr')
-dataset_hi = load_dataset('wikiann', 'hi')
-dataset_ru = load_dataset('wikiann', 'ru')
-dataset_sw = load_dataset('wikiann', 'sw')
-dataset_th = load_dataset('wikiann', 'th')
-dataset_tr = load_dataset('wikiann', 'tr')
-dataset_ur = load_dataset('wikiann', 'ur')
-dataset_vi = load_dataset('wikiann', 'vi')
-dataset_zh = load_dataset('wikiann', 'zh')
+wandb.log({"total_parameter": pytorch_total_params})
 
 
-
-training_args = TrainingArguments(
-    f"callbacks_inB_ner_{args.learning_rate}_{args.batch_size}_{args.model_name}_its_ok",
-    evaluation_strategy = "epoch", #IntervalStrategy.STEPS,
-    save_strategy = "epoch",  #IntervalStrategy.STEPS,
-    num_train_epochs=50,
+args = TrainingArguments(
+    f"callbacks_inB_Senti_FT{args.batch_size}_{args.learning_rate}_{args.model_name}_its_ok",
+    evaluation_strategy= "epoch", #IntervalStrategy.STEPS,# "no",
     save_total_limit = 3,
-    learning_rate=args.learning_rate,
-    per_device_train_batch_size=args.batch_size,
-    per_device_eval_batch_size=args.batch_size,
+    save_strategy = "epoch", #IntervalStrategy.STEPS,
+    # save_steps =1000 ,
+    # logging_steps=1000,
+    learning_rate=  args.learning_rate, #1e-5,
+    per_device_train_batch_size= args.batch_size,
+    per_device_eval_batch_size= args.batch_size,
+    num_train_epochs=50,
     weight_decay=args.weight_decay,
     warmup_steps= 2000,
-    gradient_accumulation_steps = 2,
-    #warmup_ratio=args.warmup_ratio,
-    do_predict=True,
-    #output_dir="ner_models/xlmr/",
+    fp16=True,
+    overwrite_output_dir=True,
     load_best_model_at_end=True,
     metric_for_best_model = 'eval_f1',
     greater_is_better = True,
-    fp16=True,
+    seed = args.seed,
 )
 
-# This method is adapted from the huggingface transformers run_ner.py example script 
-# Tokenize all texts and align the labels with them.
-def tokenize_and_align_labels(examples):
-    text_column_name = "tokens"
-    label_column_name = "ner_tags"
-    tokenized_inputs = tokenizer(
-        examples[text_column_name],
-        padding=False,
-        truncation=True,
-        # We use this argument because the texts in our dataset are lists of words (with a label for each word).
-        is_split_into_words=True,
-    )
-    labels = []
-    for i, label in enumerate(examples[label_column_name]):
-        word_ids = tokenized_inputs.word_ids(batch_index=i)
-        previous_word_idx = None
-        label_ids = []
-        for word_idx in word_ids:
-            # Special tokens have a word id that is None. We set the label to -100 so they are automatically
-            # ignored in the loss function.
-            if word_idx is None:
-                label_ids.append(-100)
-            # We set the label for the first token of each word.
-            elif word_idx != previous_word_idx:
-                label_ids.append(label[word_idx])
-            # For the other tokens in a word, we set the label to either the current label or -100, depending on
-            # the label_all_tokens flag.
-            else:
-                label_ids.append(-100)
-            previous_word_idx = word_idx
-
-        labels.append(label_ids)
-    tokenized_inputs["labels"] = labels
-    return tokenized_inputs
-
-
-test_dataset = datasets["test"]
-dataset_tok = datasets.map(
-    tokenize_and_align_labels,
-    batched=True,
-)
-
-
-test_ar = dataset_ar['test'].map(tokenize_and_align_labels, batched=True,)
-test_bg = dataset_bg['test'].map(tokenize_and_align_labels, batched=True,)
-test_de = dataset_de['test'].map(tokenize_and_align_labels, batched=True,)
-test_el = dataset_el['test'].map(tokenize_and_align_labels, batched=True,)
-test_es = dataset_es['test'].map(tokenize_and_align_labels, batched=True,)
-test_fr = dataset_fr['test'].map(tokenize_and_align_labels, batched=True,)
-test_hi = dataset_hi['test'].map(tokenize_and_align_labels, batched=True,)
-test_ru = dataset_ru['test'].map(tokenize_and_align_labels, batched=True,)
-test_sw = dataset_sw['test'].map(tokenize_and_align_labels, batched=True,)
-test_th = dataset_th['test'].map(tokenize_and_align_labels, batched=True,)
-test_tr = dataset_tr['test'].map(tokenize_and_align_labels, batched=True,)
-test_ur = dataset_ur['test'].map(tokenize_and_align_labels, batched=True,)
-test_vi = dataset_vi['test'].map(tokenize_and_align_labels, batched=True,)
-test_zh = dataset_zh['test'].map(tokenize_and_align_labels, batched=True,)
-
-data_collator = DataCollatorForTokenClassification(tokenizer,)
-
-
-
-
-# Metrics
-metric = load_metric("seqeval")
-
-def compute_metrics(p):
-    predictions, labels = p
-    predictions = np.argmax(predictions, axis=2)
-    label_list = id_2_label
-
-    # Remove ignored index (special tokens)
-    true_predictions = [
-        [label_list[p] for (p, l) in zip(prediction, label) if l != -100]
-        for prediction, label in zip(predictions, labels)
-    ]
-    true_labels = [
-        [label_list[l] for (p, l) in zip(prediction, label) if l != -100]
-        for prediction, label in zip(predictions, labels)
-    ]
-
-    results = metric.compute(predictions=true_predictions, references=true_labels)
-    return {
-        "precision": results["overall_precision"],
-        "recall": results["overall_recall"],
-        "f1": results["overall_f1"],
-        "accuracy": results["overall_accuracy"],
-    }
+data_collator = default_data_collator
 
 trainer = Trainer(
     model=model,
-    args=training_args,
-    train_dataset=dataset_tok['train'],
-    eval_dataset=dataset_tok['validation'],
+    args=args,
+    train_dataset=train_dataset,
+    eval_dataset=validation_dataset_train,
     tokenizer=tokenizer,
     data_collator=data_collator,
-    compute_metrics=compute_metrics,
-    callbacks = [EarlyStoppingCallback(early_stopping_patience= 3 )]
+    compute_metrics=compute_metrics_2,
+    callbacks = [EarlyStoppingCallback(early_stopping_patience= 3 )],
 )
+trainer.train()
 
-print(trainer.train())
-print(trainer.evaluate())
+predictions, _, _ = trainer.predict(validation_dataset)
+start_logits, end_logits = predictions
+print(compute_metrics(start_logits, end_logits, validation_dataset, dataset_squad["validation"]))
 
-print("########################### ZERO SHOT EVALUATION ###########################################")
 
-def eval_test_lang(data_test, data_name):
-  print("zero shot test performance for lang:   ", data_name )
-  eval_trainer = Trainer(
-    model=model,
-    args=training_args,
-    tokenizer=tokenizer,
-    data_collator=data_collator,
-    compute_metrics=compute_metrics,
-    #args=TrainingArguments(output_dir="./eval_output", remove_unused_columns=False,),
-    eval_dataset= data_test,
+#dataset_en = load_dataset("xquad", "xquad.en")
+
+dataset_en = load_dataset("xquad", "xquad.en")
+dataset_ar = load_dataset("xquad","xquad.ar")
+dataset_de = load_dataset("xquad","xquad.de")
+dataset_el = load_dataset("xquad","xquad.el")
+dataset_es = load_dataset("xquad","xquad.es")
+dataset_hi = load_dataset("xquad","xquad.hi")
+dataset_ro = load_dataset("xquad","xquad.ro")
+dataset_ru = load_dataset("xquad","xquad.ru")
+dataset_th = load_dataset("xquad","xquad.th")
+dataset_tr = load_dataset("xquad","xquad.tr")
+dataset_vi = load_dataset("xquad","xquad.vi")
+dataset_zh = load_dataset("xquad","xquad.zh")
+
+def zero_val(dataset, data_name):
+    val_dataset = dataset["validation"].map(
+        preprocess_validation_examples,
+        batched=True,
+        remove_columns=dataset["validation"].column_names,
+
     )
-  metric = eval_trainer.evaluate()
-  print("the metric for language ", data_name , " is : ",  metric)
-  wandb.log({"en-{}".format(data_name): metric})
-  wandb.log({"en-{}-eval_loss".format(data_name): metric.get('eval_loss')})
-  wandb.log({"en-{}-eval_precision".format(data_name): metric.get('eval_precision')})
-  wandb.log({"en-{}-eval_recall".format(data_name): metric.get('eval_recall')})
-  wandb.log({"en-{}-eval_f1".format(data_name): metric.get('eval_f1')})
-  wandb.log({"en-{}-eval_accuracy".format(data_name): metric.get('eval_accuracy')})
-  wandb.log({"en-{}-eval_runtime".format(data_name): metric.get('eval_runtime')})
-  wandb.log({"en-{}-eval_samples_per_second".format(data_name): metric.get('eval_samples_per_second')})
-  wandb.log({"en-{}-eval_steps_per_second".format(data_name): metric.get('eval_steps_per_second')})
-  return
+    predictions_d, _, _ = trainer.predict(val_dataset)
+    start_logits_d, end_logits_d = predictions_d
+    metric = compute_metrics(start_logits_d, end_logits_d, val_dataset, dataset["validation"])
+    print("the metric for language ", data_name , " is : ",  metric)
+    wandb.log({"en-{}".format(data_name): metric})
+    wandb.log({"en-{}-exact_match".format(data_name): metric.get('exact_match')})
+    wandb.log({"en-{}-eval_f1".format(data_name): metric.get('f1')})
+    return
+    
 
-eval_test_lang(dataset_tok['test'], "en" )
-eval_test_lang(test_ar, 'ar')
-eval_test_lang(test_bg, 'bg')
-eval_test_lang(test_de, 'de')
-eval_test_lang(test_el, 'el')
-eval_test_lang(test_es, 'es')
-eval_test_lang(test_fr, 'fr')
-eval_test_lang(test_hi, 'hi')
-eval_test_lang(test_ru, 'ru')
-eval_test_lang(test_sw, 'sw')
-eval_test_lang(test_th, 'th')
-eval_test_lang(test_tr, 'tr')
-eval_test_lang(test_ur, 'ur')
-eval_test_lang(test_vi, 'vi')
-eval_test_lang(test_zh, 'zh')
 
+zero_val(dataset_en, 'en')
+zero_val(dataset_ar ,'ar')
+zero_val(dataset_de ,'de')
+zero_val(dataset_el ,'el')
+zero_val(dataset_es ,'es')
+zero_val(dataset_hi ,'hi')
+zero_val(dataset_ro ,'ro')
+zero_val(dataset_ru ,'ru')
+zero_val(dataset_th ,'th')
+zero_val(dataset_tr ,'tr')
+zero_val(dataset_vi ,'vi')
+zero_val(dataset_zh ,'zh')
 
 
