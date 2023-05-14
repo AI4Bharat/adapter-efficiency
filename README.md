@@ -2,7 +2,7 @@
 This repository contains code for the paper A Comprehensive Analysis of Adapter Efficiency.
 <br>
 # Contributors
-Nandini Mundra 
+Nandini Mundra  (cs21s041@cse.iitm.ac.in)
 <br>
 Sumanth Doddapanen
 <br>
