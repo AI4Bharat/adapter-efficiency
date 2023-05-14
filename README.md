@@ -1,9 +1,9 @@
 # A Comprehensive Analysis of Adapter Efficiency
 This repository contains code for the paper A Comprehensive Analysis of Adapter Efficiency.
 <br>
-[IndicBert](https://github.com/AI4Bharat/adapter-efficiency/tree/main/IndicBert) contains code for Adpater tuning, Fine-tuning ans multitask training for IndicBert model.
+### [IndicBert](https://github.com/AI4Bharat/adapter-efficiency/tree/main/IndicBert) contains code for Adapter tuning, Fine-tuning ans multitask training for IndicBert model.
 <br>
-[XLMR](https://github.com/AI4Bharat/adapter-efficiency/tree/main/XLMR)  contains code for Adpater tuning, Fine-tuning ans multitask training for XLMR-Base and XLMR-Large model.
+### [XLMR](https://github.com/AI4Bharat/adapter-efficiency/tree/main/XLMR)  contains code for Adapter tuning, Fine-tuning ans multitask training for XLMR-Base and XLMR-Large model.
 <br>
 # Contributors
 Nandini Mundra  (cs21s041@cse.iitm.ac.in)
