@@ -20,7 +20,7 @@ parser.add_argument("--adap_drop", default="noAD", help = "adap drop[AD | noAD]"
 parser.add_argument('--adapter_type', default = "pfeiffer", help = "adapter type[houlsby|pfeiffer|lora|compacter|houlsbyparallel|pfeifferparallel |prefixtuning]")
 args = parser.parse_args()
 
-wandb.init(project="IndicBert_MLM_only_Sentiment", entity="nandinimundra" , name = f"its_ok_STA_{args.adapter_type}_{args.adap_drop}_{args.batch_size}" )
+wandb.init(project="your_project_name", entity="your_entity" , name = f"{args.adapter_type}_{args.adap_drop}_{args.batch_size}" )
 #os.environ["TOKENIZERS_PARALLELISM"] = "false"
 #set_seed(args.seed)
 
