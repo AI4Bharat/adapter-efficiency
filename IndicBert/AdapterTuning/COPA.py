@@ -27,7 +27,6 @@ parser.add_argument("--adap_drop", default="noAD", help = "adap drop[AD | noAD]"
 parser.add_argument('--adapter_type', default = "houlsby", help = "adapter type[houlsby|pfeiffer|lora|compacter|houlsbyparallel|pfeifferparallel |prefixtuning]")
 
 args = parser.parse_args()
-wandb.init(project="indicbert_mlm_only_copa",  entity="nandinimundra" , name = f"its_ok_STA_{args.adapter_type}_{args.adap_drop}_{args.batch_size}" )
 
 set_seed(args.seed)
 
@@ -190,7 +189,7 @@ elif args.adapter_type == "prefixtuning":
 
 
 pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-wandb.log({"total_parameter": pytorch_total_params})
+# wandb.log({"total_parameter": pytorch_total_params})
 
 
 def convert_label_to_int(example):
@@ -359,12 +358,12 @@ def zero_val(dataset, data_name):
 
     results = trainer.predict(test_dataset)
     print(f"Results for  dataset: {results.metrics}")
-    wandb.log({"en-{}".format(data_name): results.metrics})
-    wandb.log({"en-{}-test_loss".format(data_name): results.metrics.get('test_loss')})
-    wandb.log({"en-{}-test_eval_accuracy".format(data_name): results.metrics.get('test_eval_accuracy')})
-    wandb.log({"en-{}-test_runtime".format(data_name): results.metrics.get('test_runtime')})
-    wandb.log({"en-{}-test_samples_per_second".format(data_name): results.metrics.get('test_samples_per_second')})
-    wandb.log({"en-{}-test_steps_per_second".format(data_name): results.metrics.get('test_steps_per_second')})
+#     wandb.log({"en-{}".format(data_name): results.metrics})
+#     wandb.log({"en-{}-test_loss".format(data_name): results.metrics.get('test_loss')})
+#     wandb.log({"en-{}-test_eval_accuracy".format(data_name): results.metrics.get('test_eval_accuracy')})
+#     wandb.log({"en-{}-test_runtime".format(data_name): results.metrics.get('test_runtime')})
+#     wandb.log({"en-{}-test_samples_per_second".format(data_name): results.metrics.get('test_samples_per_second')})
+#     wandb.log({"en-{}-test_steps_per_second".format(data_name): results.metrics.get('test_steps_per_second')})
 
 
     
