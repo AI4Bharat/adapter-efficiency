@@ -33,7 +33,7 @@ parser.add_argument('--adapter_type', default = "pfeiffer", help = "adapter type
 
 args = parser.parse_args()
 
-wandb.init(project="indicbert_mlm_ner", entity="nandinimundra", name = f"its_ok_STA_{args.adapter_type}_{args.adap_drop}_{args.batch_size}_{args.reduction_factor}")
+
 
 
 labels = ["O", "B-PER", "I-PER", "B-ORG", "I-ORG", "B-LOC", "I-LOC"]
@@ -97,7 +97,7 @@ elif args.adapter_type == "prefixtuning":
 
 pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 print(pytorch_total_params)
-wandb.log({"no_of_parameter": pytorch_total_params})
+# wandb.log({"no_of_parameter": pytorch_total_params})
 
 
 dataset = load_dataset("conll2003")
@@ -283,15 +283,15 @@ def eval_test_lang(data_test, data_name):
     )
   metric = eval_trainer.evaluate()
   print("the metric for language ", data_name , " is : ",  metric)
-  wandb.log({"en-{}".format(data_name): metric})
-  wandb.log({"en-{}-eval_loss".format(data_name): metric.get('eval_loss')})
-  wandb.log({"en-{}-eval_precision".format(data_name): metric.get('eval_precision')})
-  wandb.log({"en-{}-eval_recall".format(data_name): metric.get('eval_recall')})
-  wandb.log({"en-{}-eval_f1".format(data_name): metric.get('eval_f1')})
-  wandb.log({"en-{}-eval_accuracy".format(data_name): metric.get('eval_accuracy')})
-  wandb.log({"en-{}-eval_runtime".format(data_name): metric.get('eval_runtime')})
-  wandb.log({"en-{}-eval_samples_per_second".format(data_name): metric.get('eval_samples_per_second')})
-  wandb.log({"en-{}-eval_steps_per_second".format(data_name): metric.get('eval_steps_per_second')})
+#   wandb.log({"en-{}".format(data_name): metric})
+#   wandb.log({"en-{}-eval_loss".format(data_name): metric.get('eval_loss')})
+#   wandb.log({"en-{}-eval_precision".format(data_name): metric.get('eval_precision')})
+#   wandb.log({"en-{}-eval_recall".format(data_name): metric.get('eval_recall')})
+#   wandb.log({"en-{}-eval_f1".format(data_name): metric.get('eval_f1')})
+#   wandb.log({"en-{}-eval_accuracy".format(data_name): metric.get('eval_accuracy')})
+#   wandb.log({"en-{}-eval_runtime".format(data_name): metric.get('eval_runtime')})
+#   wandb.log({"en-{}-eval_samples_per_second".format(data_name): metric.get('eval_samples_per_second')})
+#   wandb.log({"en-{}-eval_steps_per_second".format(data_name): metric.get('eval_steps_per_second')})
   return
 
 eval_test_lang(dataset_en['test'], "en_test" )
