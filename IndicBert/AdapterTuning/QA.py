@@ -29,7 +29,7 @@ parser.add_argument('--adapter_type', default = "houlsby", help = "adapter type[
 
 args = parser.parse_args()
 
-wandb.init(project="IndicBert_mlm_only_qa",  entity="nandinimundra" , name = f"{args.run_name}_{args.adapter_type}_{args.adap_drop}_{args.prefix_length}" )
+wandb.init(project="your_project_name", entity="your_entity" , name = f"{args.adapter_type}_{args.adap_drop}_{args.batch_size}" )
 set_seed(args.seed)
 
 metric = load_metric("squad")
