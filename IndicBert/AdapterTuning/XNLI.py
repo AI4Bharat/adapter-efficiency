@@ -31,7 +31,7 @@ parser.add_argument('--adapter_type', default = "houlsby", help = "adapter type[
 
 args = parser.parse_args()
 
-wandb.init(project="Indicbert_mlm_only_xnli", entity="nandinimundra", name = f"{args.run_name}_{args.adapter_type}_{args.adap_drop}_{args.prefix_length}_{args.batch_size}")
+wandb.init(project="your_project_name", entity="your_entity", name = f"{args.run_name}_{args.adapter_type}_{args.adap_drop}_{args.prefix_length}_{args.batch_size}")
 
 model_name = 'ai4bharat/IndicBERT-MLM-only'
 tokenizer = AutoTokenizer.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/xnli/tok_InBert_mlm_only/", use_auth_token=True)
