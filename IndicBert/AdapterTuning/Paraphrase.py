@@ -21,7 +21,7 @@ parser.add_argument("--weight_decay", type=float, default=0.1)
 
 parser.add_argument('--adapter_type', default = "houlsby", help = "adapter type[houlsby|pfeiffer|lora|compacter|houlsbyparallel|pfeifferparallel |prefixtuning]")
 args = parser.parse_args()
-wandb.init(project="indicbert_mlm_only_paraphrase", entity="nandinimundra" , name = f"its_ok_STA_{args.adapter_type}_{args.adap_drop}_{args.batch_size}" )
+wandb.init(project="your_project_name", entity="your_entity" , name = f"{args.adapter_type}_{args.adap_drop}_{args.batch_size}" )
 
 
 def preprocess(dataset):
