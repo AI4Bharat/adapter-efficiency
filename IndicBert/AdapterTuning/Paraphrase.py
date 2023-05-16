@@ -46,8 +46,8 @@ label_list = dataset_en["train"].features["label"].names
 metric = load_metric('glue', 'mnli')
 
 model_name = 'ai4bharat/IndicBERT-MLM-only'
-tokenizer = AutoTokenizer.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/paraphrase/tok_InBert_mlm_only/", use_auth_token=True)
-model = AutoAdapterModel.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/paraphrase/model_InBert_mlm_only_para/", num_labels=len(label_list), use_auth_token=True)
+tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
+model = AutoAdapterModel.from_pretrained(model_name, num_labels=len(label_list), use_auth_token=True)
 
 if args.adapter_type == "houlsby":
   config_a = HoulsbyConfig()
@@ -162,7 +162,7 @@ if args.adap_drop == "AD":
 trainer.train()
 
 trainer.evaluate()
-model.save_adapter(f"/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/adapter_fusion/paraphrase_its_ok", "pfeiffer_adapter")
+model.save_adapter(f"/paraphrase_its_ok", "pfeiffer_adapter")
 
 
 def eval_test_lang(data_test, data_name):
