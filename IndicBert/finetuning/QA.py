@@ -38,7 +38,7 @@ print(dataset_squad)
 #dataset_squad['train'] = dataset_squad['train'].shard(num_shards=100, index=0)
 #dataset_squad['validation'] = dataset_squad['validation'].shard(num_shards=100, index=0)
 #print(dataset_squad)
-model_name = 'ai4bharat/IndicBERT-MLM-only'
+model_name = 'ai4bharat/IndicBERTv2-MLM-only'
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 max_length = 384
 stride = 128
