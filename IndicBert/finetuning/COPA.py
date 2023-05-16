@@ -24,7 +24,7 @@ parser.add_argument("--learning_rate", type=float, default=3e-5)
 parser.add_argument("--weight_decay", type=float, default=0.1)
 parser.add_argument("--seed", type=int, default=2)
 args = parser.parse_args()
-wandb.init(project="indicbert_mlm_only_copa",  entity="nandinimundra" , name = f"FT_its_ok_{args.batch_size}_{args.learning_rate}" )
+wandb.init(project="indicbert_mlm_only_copa",  entity="your_entity" , name = f"FT_its_ok_{args.batch_size}_{args.learning_rate}" )
 
 set_seed(args.seed)
 
@@ -137,8 +137,8 @@ label_list = dataset['train'].unique("label")
 label_list.sort()  # Let's sort it for determinism
 label_to_id = {v: i for i, v in enumerate(label_list)}
 
-tokenizer = AutoTokenizer.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/copa/tok_InBert_mlm_only/", use_auth_token=True)
-model = AutoModelForMultipleChoice.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/copa/model_InBert_mlm_only_copa/", use_auth_token=True)
+tokenizer = AutoTokenizer.from_pretrained("ai4bharat/IndicBERTv2-MLM-only", use_auth_token=True)
+model = AutoModelForMultipleChoice.from_pretrained("ai4bharat/IndicBERTv2-MLM-only", use_auth_token=True)
 pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 wandb.log({"total_parameter": pytorch_total_params})
 
