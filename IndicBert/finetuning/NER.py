@@ -35,7 +35,7 @@ labels = ["O", "B-PER", "I-PER", "B-ORG", "I-ORG", "B-LOC", "I-LOC"]
 id_2_label = {id_: label for id_, label in enumerate(labels)}
 label_2_id = {label: id_ for id_, label in enumerate(labels)}
 
-model_name = 'ai4bharat/IndicBERT-MLM-TLM'
+model_name = 'ai4bharat/IndicBERTv2-MLM-only'
 config = AutoConfig.from_pretrained(model_name, num_labels=len(labels), label2id=label_2_id, id2label=id_2_label, use_auth_token=True)
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 model = AutoModelForTokenClassification.from_pretrained(model_name, config=config, use_auth_token=True)
