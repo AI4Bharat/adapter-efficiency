@@ -23,10 +23,10 @@ parser.add_argument("--weight_decay", type=float, default=0.1)
 parser.add_argument("--max_seq_length", type=int, default=128)
 args = parser.parse_args()
 
-wandb.init(project="Indicbert_mlm_only_xnli", entity="nandinimundra", name = f"FT_its_ok_{args.batch_size}_{args.learning_rate}_2")
+wandb.init(project="Indicbert_mlm_only_xnli", entity="your_entity", name = f"FT_its_ok_{args.batch_size}_{args.learning_rate}_2")
 
 model_name = 'ai4bharat/IndicBERT-MLM-only'
-tokenizer = AutoTokenizer.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/finetune/tok_InBert_mlm_only/", use_auth_token=True)
+tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 def preprocess(dataset):
   dataset = dataset.map(lambda batch: tokenizer.encode_plus( batch['premise'], batch['hypothesis'], max_length= 128, pad_to_max_length = True, truncation=True))
   dataset = dataset.rename_column("label", "labels")
@@ -76,13 +76,13 @@ id2label= {0: "entailment", 1: "neutral", 2: "contradiction"}
 label2id = {"entailment":0, "neutral": 1, "contradiction":2 }
 
 config = AutoConfig.from_pretrained(
-    "/nlsasfs/home/ai4bharat/nandinim/nandini/finetune/config_InBert_mlm_only_sequence_xnli/",
+    model_name,
     use_auth_token=True,
     num_labels=3,
     id2label={ 0: "entailment", 1: "neutral", 2: "contradiction"},
 )
 model = BertForSequenceClassification.from_pretrained(
-    "/nlsasfs/home/ai4bharat/nandinim/nandini/finetune/model_InBert_mlm_only_sequence_xnli/",
+    model_name,
     use_auth_token=True,
     config=config,
 )
