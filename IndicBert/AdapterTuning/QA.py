@@ -43,7 +43,7 @@ print(dataset_squad)
 #dataset_squad['validation'] = dataset_squad['validation'].shard(num_shards=200, index=0)
 #print(dataset_squad)
 model_name = 'ai4bharat/IndicBERT-MLM-only'
-tokenizer = AutoTokenizer.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/qa/tok_InBert_mlm_only/", use_auth_token=True)
+tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 
 max_length = 384
 stride = 128
@@ -273,7 +273,7 @@ def compute_metrics_2(p: EvalPrediction):
 
 
 
-model = AutoModelForQuestionAnswering.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/qa/model_InBert_mlm_only_qa_adap/", use_auth_token=True)
+model = AutoModelForQuestionAnswering.from_pretrained(model_name, use_auth_token=True)
 
 
 if args.adapter_type == "houlsby":
@@ -379,7 +379,7 @@ if args.adap_drop == "AD":
 
 trainer.train()
 
-#model.save_adapter(f"/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/adapter_fusion/qa_its_ok", "pfeiffer_adapter")
+#model.save_adapter(f"/qa_its_ok", "pfeiffer_adapter")
 
 
 predictions, _, _ = trainer.predict(validation_dataset)
