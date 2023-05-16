@@ -28,7 +28,7 @@ parser.add_argument('--adapter_type', default = "houlsby", help = "adapter type[
 
 args = parser.parse_args()
 
-#model = AutoModelForQuestionAnswering.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/qa/model_xlmr_b_mlm_only_qa/", use_auth_token=True)
+
 
 if args.model_name == "indicbert":
     wandb.init(project="Indicbert_mlm_only_xnli", entity="nandinimundra", name = f"{args.model_name}_{args.adapter_type}_{args.adap_drop}_{args.batch_size}_{args.learning_rate}")
@@ -36,7 +36,7 @@ if args.model_name == "indicbert":
     tokenizer = AutoTokenizer.from_pretrained("ai4bharat/IndicBERT-MLM-only", use_auth_token=True)
 
     model = AutoModelForQuestionAnswering.from_pretrained(
-        "/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/xnli/model_InBert_mlm_only_xnli_adap/",
+        model_name,
     )
 
 elif args.model_name == "xlmr-b":
@@ -400,7 +400,7 @@ if args.adap_drop == "AD":
 
 trainer.train()
 
-#model.save_adapter(f"/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/adapter_fusion/qa_64", "pfeiffer_adapter")
+#model.save_adapter(f"/qa_64", "pfeiffer_adapter")
 
 
 predictions, _, _ = trainer.predict(validation_dataset)
