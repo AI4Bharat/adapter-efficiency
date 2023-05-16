@@ -17,7 +17,7 @@ parser.add_argument("--learning_rate", type=float, default=3e-5)
 parser.add_argument("--weight_decay", type=float, default=0.1)
 
 args = parser.parse_args()
-wandb.init(project="indicbert_mlm_only_paraphrase", entity="nandinimundra" , name = f"FT_its_ok_{args.batch_size}_{args.learning_rate}" )
+wandb.init(project="indicbert_mlm_only_paraphrase", entity="your_entity" , name = f"FT_its_ok_{args.batch_size}_{args.learning_rate}" )
 
 
 def preprocess(dataset):
@@ -42,8 +42,8 @@ label_list = dataset_en["train"].features["label"].names
 metric = load_metric('glue', 'mnli')
 
 model_name = 'ai4bharat/IndicBERT-MLM-only'
-tokenizer = AutoTokenizer.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/paraphrase/tok_InBert_mlm_only/", use_auth_token=True)
-model = AutoModelForSequenceClassification.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/paraphrase/model_InBert_mlm_only_para/", num_labels=len(label_list), use_auth_token=True)
+tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
+model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=len(label_list), use_auth_token=True)
 
 pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 wandb.log({"total_parameter": pytorch_total_params})
