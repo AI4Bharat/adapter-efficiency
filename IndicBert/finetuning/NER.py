@@ -28,7 +28,7 @@ parser.add_argument("--weight_decay", type=float, default=0.1)
 parser.add_argument("--max_seq_length", type=int, default=128)
 args = parser.parse_args()
 
-wandb.init(project="indicbert_mlm_ner", entity="nandinimundra", name = f"FT_its_ok_{args.batch_size}_{args.learning_rate}")
+wandb.init(project="indicbert_mlm_ner", entity="your_entity", name = f"FT_its_ok_{args.batch_size}_{args.learning_rate}")
 
 
 labels = ["O", "B-PER", "I-PER", "B-ORG", "I-ORG", "B-LOC", "I-LOC"]
@@ -36,9 +36,9 @@ id_2_label = {id_: label for id_, label in enumerate(labels)}
 label_2_id = {label: id_ for id_, label in enumerate(labels)}
 
 model_name = 'ai4bharat/IndicBERT-MLM-TLM'
-config = AutoConfig.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/ner/config_InBert_mlm_only_ner/", num_labels=len(labels), label2id=label_2_id, id2label=id_2_label, use_auth_token=True)
-tokenizer = AutoTokenizer.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/ner/tokenizer_InBert_mlm_only/", use_auth_token=True)
-model = AutoModelForTokenClassification.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/ner/model_InBert_mlm_only_ner/", config=config, use_auth_token=True)
+config = AutoConfig.from_pretrained(model_name, num_labels=len(labels), label2id=label_2_id, id2label=id_2_label, use_auth_token=True)
+tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
+model = AutoModelForTokenClassification.from_pretrained(model_name, config=config, use_auth_token=True)
 
 pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 print(pytorch_total_params)
