@@ -41,7 +41,7 @@ dataset_en = load_dataset("paws-x", "en")
 label_list = dataset_en["train"].features["label"].names
 metric = load_metric('glue', 'mnli')
 
-model_name = 'ai4bharat/IndicBERT-MLM-only'
+model_name = 'ai4bharat/IndicBERTv2-MLM-only'
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=len(label_list), use_auth_token=True)
 
