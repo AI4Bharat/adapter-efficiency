@@ -1,5 +1,5 @@
 # A Comprehensive Analysis of Adapter Efficiency
-This repository contains code for the paper A Comprehensive Analysis of Adapter Efficiency.
+This repository contains code for the paper [A Comprehensive Analysis of Adapter Efficiency](https://arxiv.org/abs/2305.07491).
 <br>
 [IndicBert](https://github.com/AI4Bharat/adapter-efficiency/tree/main/IndicBert) contains code for Adapter tuning, Fine-tuning and multitask training for IndicBert model.
 <br>
