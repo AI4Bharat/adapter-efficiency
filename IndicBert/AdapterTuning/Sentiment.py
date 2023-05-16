@@ -60,7 +60,7 @@ print(len(label_list))
 
 model_name = 'ai4bharat/IndicBERT-MLM-only'
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
-model = AutoAdapterModel.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/adaptertune/sentiment/model_InBert_mlm_only_sentiment_adap/", num_labels=len(label_list), use_auth_token=True)
+model = AutoAdapterModel.from_pretrained(model_name, num_labels=len(label_list), use_auth_token=True)
 
 
 if args.adapter_type == "houlsby":
@@ -222,7 +222,7 @@ if args.adap_drop == "AD":
 
 trainer.train()
 trainer.evaluate()
-model.save_adapter(f"/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/adapter_fusion/sentiment_its_ok", "pfeiffer_adapter")
+model.save_adapter(f"/sentiment_its_ok", "pfeiffer_adapter")
 
 def eval_test_lang(data_test, data_name):
   print("zero shot test performance for lang:   ", data_name )
