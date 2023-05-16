@@ -34,10 +34,10 @@ parser.add_argument("--shard_num", type=int, default= 20)
 parser.add_argument('--add_task', default = "none", help = "addtask[xnli|ner|sentiment|paraphrase|copa|qa |none]")
 parser.add_argument("--model_name", type=str, default="optimal_5_")  # ner was commented
 args = parser.parse_args()
-wandb.init(project="multitask", entity="nandinimundra" , name = f"{args.model_name}_{args.add_task}_{args.shard_num}_{args.learning_rate}" )
+wandb.init(project="multitask", entity="your_entity" , name = f"{args.model_name}_{args.add_task}_{args.shard_num}_{args.learning_rate}" )
 ########################################### XNLI DATA processing
 model_name = 'ai4bharat/IndicBERT-MLM-only'
-tokenizer = transformers.AutoTokenizer.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/qa/tok_InBert_mlm_only/", use_auth_token=True)
+tokenizer = transformers.AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 
 dataset_xnli = load_dataset("xnli", 'en')
 dataset_xnli = dataset_xnli.shuffle(seed=args.seed)
@@ -315,15 +315,15 @@ multitask_model = MultitaskModel.create(
     },
 
     model_config_dict={
-        "xnli": transformers.AutoConfig.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/finetune/model_InBert_mlm_only_sequence_xnli/", num_labels=3, use_auth_token=True),
-        "ner": transformers.AutoConfig.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/ner/model_InBert_mlm_only_ner/", num_labels=len(labels_ner), label2id=label_2_id_ner, id2label=id_2_label_ner, use_auth_token=True),
-        "paraphrase": transformers.AutoConfig.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/paraphrase/model_InBert_mlm_only_para/", num_labels=len(label_list_paraphrase), use_auth_token=True),
-        "sentiment": transformers.AutoConfig.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/sentiment/model_InBert_mlm_only_sentiment/", num_labels=len(label_list_sentiment), use_auth_token=True), 
-        "qa": transformers.AutoConfig.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/qa/model_InBert_mlm_only_qa_adap/", use_auth_token= True ),
-        "copa" : transformers.AutoConfig.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/copa/model_InBert_mlm_only_copa/", use_auth_token= True ),
+        "xnli": transformers.AutoConfig.from_pretrained(model_name, num_labels=3, use_auth_token=True),
+        "ner": transformers.AutoConfig.from_pretrained(model_name, num_labels=len(labels_ner), label2id=label_2_id_ner, id2label=id_2_label_ner, use_auth_token=True),
+        "paraphrase": transformers.AutoConfig.from_pretrained(model_name, num_labels=len(label_list_paraphrase), use_auth_token=True),
+        "sentiment": transformers.AutoConfig.from_pretrained(model_name, num_labels=len(label_list_sentiment), use_auth_token=True), 
+        "qa": transformers.AutoConfig.from_pretrained(model_name, use_auth_token= True ),
+        "copa" : transformers.AutoConfig.from_pretrained(model_name, use_auth_token= True ),
     },
 )
-multitask_model.load_state_dict(torch.load(f"/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/MTL/{args.model_path}/{args.checkpont_p}/pytorch_model.bin" ))
+multitask_model.load_state_dict(torch.load(f"/new_finetune/MTL/{args.model_path}/{args.checkpont_p}/pytorch_model.bin" ))
 print("model_weight_loaded")
 if model_name.startswith("ai4bharat"):
     #print(multitask_model.encoder.embeddings.word_embeddings.weight.data_ptr())
