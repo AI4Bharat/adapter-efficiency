@@ -27,7 +27,7 @@ args = parser.parse_args()
 
 wandb.init(project="Indicbert_mlm_only_xnli", entity="your_entity", name = f"last_please_{args.model_path}_{args.checkpont_p}")
 
-model_name = 'ai4bharat/IndicBERT-MLM-only'
+model_name = 'ai4bharat/IndicBERTv2-MLM-only'
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 def add_prefix(example):
     example["premise"] = 'premise: ' + example["premise"]
