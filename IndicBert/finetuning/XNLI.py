@@ -25,7 +25,7 @@ args = parser.parse_args()
 
 wandb.init(project="Indicbert_mlm_only_xnli", entity="your_entity", name = f"FT_its_ok_{args.batch_size}_{args.learning_rate}_2")
 
-model_name = 'ai4bharat/IndicBERT-MLM-only'
+model_name = 'ai4bharat/IndicBERTv2-MLM-only'
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 def preprocess(dataset):
   dataset = dataset.map(lambda batch: tokenizer.encode_plus( batch['premise'], batch['hypothesis'], max_length= 128, pad_to_max_length = True, truncation=True))
