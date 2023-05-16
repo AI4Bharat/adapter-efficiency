@@ -58,7 +58,7 @@ label_list = dataset['train'].unique('label')
 print(len(label_list))
 
 
-model_name = 'ai4bharat/IndicBERT-MLM-only'
+model_name = 'ai4bharat/IndicBERTv2-MLM-only'
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 model = AutoAdapterModel.from_pretrained(model_name, num_labels=len(label_list), use_auth_token=True)
 
