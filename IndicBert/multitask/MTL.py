@@ -22,7 +22,7 @@ parser.add_argument("--model_name", type=str, default="MTL_it_sok_6_01_10000_") 
 args = parser.parse_args()
 wandb.init(project="multitask", entity="your_entity" , name = f"{args.model_name}_{args.batch_size}_{args.learning_rate}" )
 ########################################### XNLI DATA processing
-model_name = 'ai4bharat/IndicBERT-MLM-only'
+model_name = 'ai4bharat/IndicBERTv2-MLM-only'
 tokenizer = transformers.AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 
 dataset_xnli = load_dataset("xnli", 'en')
