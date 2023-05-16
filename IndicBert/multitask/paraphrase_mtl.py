@@ -21,7 +21,7 @@ parser.add_argument("--checkpont_p", type=str, default="checkpoint-69861")
 parser.add_argument("--weight_decay", type=float, default=0.0)
 parser.add_argument("--warmup_ratio", type=float, default=0.1)
 args = parser.parse_args()
-wandb.init(project="indicbert_mlm_only_paraphrase", entity="nandinimundra" , name = f"last_please_{args.model_path}_{args.checkpont_p}")
+wandb.init(project="indicbert_mlm_only_paraphrase", entity="your_entity" , name = f"last_please_{args.model_path}_{args.checkpont_p}")
 
 class MultitaskModel(transformers.PreTrainedModel):
     def __init__(self, encoder, taskmodels_dict):
@@ -103,7 +103,7 @@ multitask_model = MultitaskModel.create(
     },
 )
 #multitask_model = torch.load(args.model_path)
-multitask_model.load_state_dict(torch.load(f"/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/MTL/{args.model_path}/{args.checkpont_p}/pytorch_model.bin" ))
+multitask_model.load_state_dict(torch.load(f"/new_finetune/MTL/{args.model_path}/{args.checkpont_p}/pytorch_model.bin" ))
 
 
 def preprocess(dataset):
