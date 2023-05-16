@@ -41,7 +41,7 @@ parser.add_argument("--checkpont_p", type=str, default="checkpoint-69861")
 
 args = parser.parse_args()
 
-wandb.init(project="xlmr_base_ner", entity="nandinimundra", name = f"mtl_{args.model_path}_{args.checkpont_p}_inc_train")
+wandb.init(project="xlmr_base_ner", entity="your_entity", name = f"mtl_{args.model_path}_{args.checkpont_p}_inc_train")
 
 labels_ner = ["O", "B-PER", "I-PER", "B-ORG", "I-ORG", "B-LOC", "I-LOC"]
 id_2_label_ner = {id_: label for id_, label in enumerate(labels_ner)}
