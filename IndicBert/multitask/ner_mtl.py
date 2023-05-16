@@ -31,7 +31,7 @@ parser.add_argument("--warmup_ratio", type=float, default=0.1)
 parser.add_argument("--max_seq_length", type=int, default=256)
 args = parser.parse_args()
 
-wandb.init(project="indicbert_mlm_ner", entity="nandinimundra", name = f"last_please_{args.model_path}_{args.checkpont_p}")
+wandb.init(project="indicbert_mlm_ner", entity="your_entity", name = f"last_please_{args.model_path}_{args.checkpont_p}")
 
 class MultitaskModel(transformers.PreTrainedModel):
     def __init__(self, encoder, taskmodels_dict):
@@ -113,7 +113,7 @@ multitask_model = MultitaskModel.create(
     },
 )
 #multitask_model = torch.load(args.model_path)
-multitask_model.load_state_dict(torch.load(f"/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/MTL/{args.model_path}/{args.checkpont_p}/pytorch_model.bin" ))
+multitask_model.load_state_dict(torch.load(f"/new_finetune/MTL/{args.model_path}/{args.checkpont_p}/pytorch_model.bin" ))
 
 
 labels = ["O", "B-PER", "I-PER", "B-ORG", "I-ORG", "B-LOC", "I-LOC"]
