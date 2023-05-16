@@ -25,7 +25,7 @@ parser.add_argument("--warmup_ratio", type=float, default=0.1)
 
 args = parser.parse_args()
 
-wandb.init(project="Indicbert_mlm_only_xnli", entity="nandinimundra", name = f"last_please_{args.model_path}_{args.checkpont_p}")
+wandb.init(project="Indicbert_mlm_only_xnli", entity="your_entity", name = f"last_please_{args.model_path}_{args.checkpont_p}")
 
 model_name = 'ai4bharat/IndicBERT-MLM-only'
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
@@ -120,7 +120,7 @@ multitask_model = MultitaskModel.create(
     },
 )
 #multitask_model = torch.load(args.model_path)
-multitask_model.load_state_dict(torch.load(f"/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/MTL/{args.model_path}/{args.checkpont_p}/pytorch_model.bin" ))
+multitask_model.load_state_dict(torch.load(f"/new_finetune/MTL/{args.model_path}/{args.checkpont_p}/pytorch_model.bin" ))
 dataset_en = load_dataset("xnli", 'en')
 datset_en = dataset_en.shuffle(seed=42)
 #dataset_en['train'] = dataset_en['train'].shard(num_shards=200, index=0)
