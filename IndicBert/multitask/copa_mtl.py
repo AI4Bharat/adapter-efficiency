@@ -31,7 +31,7 @@ parser.add_argument("--seed", type=int, default=42)
 parser.add_argument("--model_path", type=str, default="callbacks_MTL_xnli_pref_ep_10_8__32_4e-05_7")
 parser.add_argument("--checkpont_p", type=str, default="checkpoint-69861")
 args = parser.parse_args()
-wandb.init(project="indicbert_mlm_only_copa",  entity="nandinimundra" , name = f"last_please_{args.model_path}_{args.checkpont_p}" )
+wandb.init(project="indicbert_mlm_only_copa",  entity="your_entity" , name = f"last_please_{args.model_path}_{args.checkpont_p}" )
 
 set_seed(args.seed)
 class MultitaskModel(transformers.PreTrainedModel):
@@ -114,7 +114,7 @@ multitask_model = MultitaskModel.create(
     },
 )
 #multitask_model = torch.load(args.model_path)
-multitask_model.load_state_dict(torch.load(f"/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/MTL/{args.model_path}/{args.checkpont_p}/pytorch_model.bin" ))
+multitask_model.load_state_dict(torch.load(f"/new_finetune/MTL/{args.model_path}/{args.checkpont_p}/pytorch_model.bin" ))
 @dataclass
 class DataCollatorForMultipleChoice:
     """
