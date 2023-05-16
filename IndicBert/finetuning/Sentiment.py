@@ -16,7 +16,7 @@ parser.add_argument("--weight_decay", type=float, default=0.1)
 parser.add_argument("--max_seq_length", type=int, default=128)
 args = parser.parse_args()
 
-wandb.init(project="IndicBert_MLM_only_Sentiment", entity="nandinimundra" , name = f"FT_{args.batch_size}_its_ok" )
+wandb.init(project="IndicBert_MLM_only_Sentiment", entity="your_entity" , name = f"FT_{args.batch_size}_its_ok" )
 #os.environ["TOKENIZERS_PARALLELISM"] = "false"
 #set_seed(args.seed)
 
@@ -55,9 +55,9 @@ label_list = dataset['train'].unique('label')
 
 metric = load_metric('glue', 'sst2')
 
-#model_name = 'ai4bharat/IndicBERT-MLM-only'
-tokenizer = AutoTokenizer.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/sentiment/tok_InBert_mlm_only/", use_auth_token=True)
-model = BertForSequenceClassification.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/sentiment/model_InBert_mlm_only_sentiment/", 
+model_name = 'ai4bharat/IndicBERT-MLM-only'
+tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
+model = BertForSequenceClassification.from_pretrained(model_name, 
                     num_labels=len(label_list), use_auth_token=True)
 #dataset['train'] = dataset['train'].shard(num_shards=20, index=0)
 #dataset['validation'] = dataset['validation'].shard(num_shards=100, index=0)
