@@ -33,23 +33,23 @@ args = parser.parse_args()
 
 
 if args.model_name == "indicbert":
-    wandb.init(project="Indicbert_mlm_only_xnli", entity="nandinimundra", name = f"{args.run_name}_{args.model_name}_{args.adapter_type}_{args.adap_drop}_{args.reduction_factor}")
+    wandb.init(project="Indicbert_mlm_only_xnli", entity="your_entity", name = f"{args.run_name}_{args.model_name}_{args.adapter_type}_{args.adap_drop}_{args.reduction_factor}")
     model_name = 'ai4bharat/IndicBERT-MLM-only'
     tokenizer = AutoTokenizer.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/xnli/tok_InBert_mlm_only/", use_auth_token=True)
     config = AutoConfig.from_pretrained(
-        "/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/xnli/config_InBert_mlm_only_xnli_adap/",
+        model_name,
         num_labels=3,
         id2label={ 0: "entailment", 1: "neutral", 2: "contradiction"},
         use_auth_token=True,
     )
     model = AutoAdapterModel.from_pretrained(
-        "/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/xnli/model_InBert_mlm_only_xnli_adap/",
+        model_name,
         config=config,
         use_auth_token=True,
     )
 
 elif args.model_name == "xlmr-b":
-    wandb.init(project="XLMR-base_xnli", entity="nandinimundra", name = f"{args.model_name}_{args.run_name}_{args.adapter_type}_{args.adap_drop}_{args.batch_size}_{args.learning_rate}")
+    wandb.init(project="XLMR-base_xnli", entity="your_entity", name = f"{args.model_name}_{args.run_name}_{args.adapter_type}_{args.adap_drop}_{args.batch_size}_{args.learning_rate}")
     #model_name = 'ai4bharat/IndicBERT-MLM-only'
     tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-base", use_auth_token=True)
     config = AutoConfig.from_pretrained(
@@ -64,7 +64,7 @@ elif args.model_name == "xlmr-b":
         use_auth_token=True,
     )
 elif args.model_name == "xlmr-l":
-    wandb.init(project="xlmr_large_xnli", entity="nandinimundra", name = f"{args.model_name}_{args.run_name}_{args.adapter_type}_{args.adap_drop}_{args.batch_size}_{args.learning_rate}")
+    wandb.init(project="xlmr_large_xnli", entity="your_entity", name = f"{args.model_name}_{args.run_name}_{args.adapter_type}_{args.adap_drop}_{args.batch_size}_{args.learning_rate}")
     #model_name = 'ai4bharat/IndicBERT-MLM-only'
     tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-large", use_auth_token=True)
     config = AutoConfig.from_pretrained(
@@ -247,7 +247,7 @@ if args.adap_drop == "AD":
 
 print(trainer.train())
 print(trainer.evaluate())
-#model.save_adapter(f"/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/adapter_fusion/xnli_{args.batch_size}", "pfeiffer_adapter")
+#model.save_adapter(f"/xnli_{args.batch_size}", "pfeiffer_adapter")
 
 
 def eval_test_lang(data_test, data_name):
