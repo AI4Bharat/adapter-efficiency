@@ -34,7 +34,7 @@ args = parser.parse_args()
 wandb.init(project="your_project_name", entity="your_entity", name = f"{args.run_name}_{args.adapter_type}_{args.adap_drop}_{args.prefix_length}_{args.batch_size}")
 
 model_name = 'ai4bharat/IndicBERT-MLM-only'
-tokenizer = AutoTokenizer.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/xnli/tok_InBert_mlm_only/", use_auth_token=True)
+tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 def preprocess(dataset):
   dataset = dataset.map(lambda batch: tokenizer.encode_plus( batch['premise'], batch['hypothesis'], max_length= 128, pad_to_max_length = True, truncation=True))
   dataset = dataset.rename_column("label", "labels")
@@ -85,13 +85,13 @@ id2label= {0: "entailment", 1: "neutral", 2: "contradiction"}
 label2id = {"entailment":0, "neutral": 1, "contradiction":2 }
 
 config = AutoConfig.from_pretrained(
-    "/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/xnli/config_InBert_mlm_only_xnli_adap/",
+    model_name,
     num_labels=3,
     id2label={ 0: "entailment", 1: "neutral", 2: "contradiction"},
     use_auth_token=True,
 )
 model = AutoAdapterModel.from_pretrained(
-    "/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/xnli/model_InBert_mlm_only_xnli_adap/",
+    model_name,
     config=config,
     use_auth_token=True,
 )
@@ -217,7 +217,7 @@ if args.adap_drop == "AD":
 
 print(trainer.train())
 print(trainer.evaluate())
-#model.save_adapter(f"/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/adapter_fusion/xnli_its_ok", "pfeiffer_adapter")
+#model.save_adapter(f"/xnli_its_ok", "pfeiffer_adapter")
 
 
 def eval_test_lang(data_test, data_name):
