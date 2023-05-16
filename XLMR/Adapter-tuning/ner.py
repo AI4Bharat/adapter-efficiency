@@ -37,30 +37,30 @@ id_2_label = {id_: label for id_, label in enumerate(labels)}
 label_2_id = {label: id_ for id_, label in enumerate(labels)}
 
 if args.model_name == "indicbert":
-    wandb.init(project="Indicbert_mlm_only_xnli", entity="nandinimundra", name = f"{args.model_name}_{args.adapter_type}_{args.adap_drop}_{args.batch_size}_{args.learning_rate}")
+    wandb.init(project="Indicbert_mlm_only_xnli", entity="your_entity", name = f"{args.model_name}_{args.adapter_type}_{args.adap_drop}_{args.batch_size}_{args.learning_rate}")
     model_name = 'ai4bharat/IndicBERT-MLM-only'
-    tokenizer = AutoTokenizer.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/xnli/tok_InBert_mlm_only/", use_auth_token=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
     config = AutoConfig.from_pretrained(
-        "/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/xnli/config_InBert_mlm_only_xnli_adap/",
+        model_name,
         num_labels=3,
         id2label={ 0: "entailment", 1: "neutral", 2: "contradiction"},
         use_auth_token=True,
     )
     model = AutoAdapterModel.from_pretrained(
-        "/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/xnli/model_InBert_mlm_only_xnli_adap/",
+        model_name,
         config=config,
         use_auth_token=True,
     )
 
 elif args.model_name == "xlmr-b":
-    wandb.init(project="xlmr_base_ner", entity="nandinimundra", name = f"{args.model_name}_{args.adapter_type}_{args.run_name}_{args.batch_size}_{args.adap_drop}")
+    wandb.init(project="xlmr_base_ner", entity="your_entity", name = f"{args.model_name}_{args.adapter_type}_{args.run_name}_{args.batch_size}_{args.adap_drop}")
     model_name = 'xlm-roberta-base'
     tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-base", use_auth_token=True)
     config = AutoConfig.from_pretrained(model_name, num_labels=len(labels), label2id=label_2_id, id2label=id_2_label)
     model = AutoAdapterModel.from_pretrained(model_name, config=config)
 
 elif args.model_name == "xlmr-l":
-    wandb.init(project="xlmr_large_ner", entity="nandinimundra", name = f"{args.model_name}_{args.adapter_type}_{args.run_name}_{args.batch_size}_{args.adap_drop}")
+    wandb.init(project="xlmr_large_ner", entity="your_entity", name = f"{args.model_name}_{args.adapter_type}_{args.run_name}_{args.batch_size}_{args.adap_drop}")
     model_name = 'xlm-roberta-large'
     tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-large", use_auth_token=True)
     config = AutoConfig.from_pretrained(model_name, num_labels=len(labels), label2id=label_2_id, id2label=id_2_label)
