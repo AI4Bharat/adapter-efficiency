@@ -86,7 +86,7 @@ class MultitaskModel(transformers.PreTrainedModel):
     def forward(self, task_name, **kwargs):
         return self.taskmodels_dict[task_name](**kwargs)
 
-model_name = 'ai4bharat/IndicBERT-MLM-only'
+model_name = 'ai4bharat/IndicBERTv2-MLM-only'
 tokenizer = transformers.AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 labels_ner = ["O", "B-PER", "I-PER", "B-ORG", "I-ORG", "B-LOC", "I-LOC"]
 id_2_label_ner = {id_: label for id_, label in enumerate(labels_ner)}
