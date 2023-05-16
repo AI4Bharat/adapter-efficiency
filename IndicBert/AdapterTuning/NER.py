@@ -41,9 +41,9 @@ id_2_label = {id_: label for id_, label in enumerate(labels)}
 label_2_id = {label: id_ for id_, label in enumerate(labels)}
 
 model_name = 'ai4bharat/IndicBERT-MLM-TLM'
-config = AutoConfig.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/ner/config_adap_InBert_mlm_only_ner/", num_labels=len(labels), label2id=label_2_id, id2label=id_2_label, use_auth_token=True)
-tokenizer = AutoTokenizer.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/ner/tokenizer_InBert_mlm_only/", use_auth_token=True)
-model = AutoAdapterModel.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/ner/model_adap_InBert_mlm_only_ner/", config=config, use_auth_token=True)
+config = AutoConfig.from_pretrained(model_name, num_labels=len(labels), label2id=label_2_id, id2label=id_2_label, use_auth_token=True)
+tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
+model = AutoAdapterModel.from_pretrained(model_name, config=config, use_auth_token=True)
 
 if args.adapter_type == "houlsby":
   config_a = HoulsbyConfig(reduction_factor = args.reduction_factor)
@@ -266,7 +266,7 @@ if args.adap_drop == "AD":
 #trainer.add_callback(AdapterDropTrainerCallback())
 print(trainer.train())
 print(trainer.evaluate())
-#model.save_adapter(f"/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/adapter_fusion/ner_its_ok", "pfeiffer_adapter")
+#model.save_adapter(f"/ner_its_ok", "pfeiffer_adapter")
 
 print("########################### ZERO SHOT EVALUATION ###########################################")
 
