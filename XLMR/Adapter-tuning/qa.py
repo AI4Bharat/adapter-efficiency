@@ -31,7 +31,7 @@ args = parser.parse_args()
 
 
 if args.model_name == "indicbert":
-    wandb.init(project="Indicbert_mlm_only_xnli", entity="nandinimundra", name = f"{args.model_name}_{args.adapter_type}_{args.adap_drop}_{args.batch_size}_{args.learning_rate}")
+    wandb.init(project="Indicbert_mlm_only_xnli", entity="your_entity", name = f"{args.model_name}_{args.adapter_type}_{args.adap_drop}_{args.batch_size}_{args.learning_rate}")
     model_name = 'ai4bharat/IndicBERT-MLM-only'
     tokenizer = AutoTokenizer.from_pretrained("ai4bharat/IndicBERT-MLM-only", use_auth_token=True)
 
@@ -40,14 +40,14 @@ if args.model_name == "indicbert":
     )
 
 elif args.model_name == "xlmr-b":
-    wandb.init(project="xlmr_base_qa", entity="nandinimundra", name = f"{args.model_name}_{args.adapter_type}_its_ok_{args.adap_drop}_{args.batch_size}_{args.learning_rate}")
+    wandb.init(project="xlmr_base_qa", entity="your_entity", name = f"{args.model_name}_{args.adapter_type}_its_ok_{args.adap_drop}_{args.batch_size}_{args.learning_rate}")
     #model_name = 'ai4bharat/IndicBERT-MLM-only'
     tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-base", use_auth_token=True)
     model = AutoModelForQuestionAnswering.from_pretrained(
         "xlm-roberta-base"
     )
 elif args.model_name == "xlmr-l":
-    wandb.init(project="xlmr_large_qa", entity="nandinimundra", name = f"{args.model_name}_{args.adapter_type}_its_ok_{args.adap_drop}_{args.batch_size}_{args.learning_rate}")
+    wandb.init(project="xlmr_large_qa", entity="your_entity", name = f"{args.model_name}_{args.adapter_type}_its_ok_{args.adap_drop}_{args.batch_size}_{args.learning_rate}")
     #model_name = 'ai4bharat/IndicBERT-MLM-only'
     tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-large", use_auth_token=True)
     
