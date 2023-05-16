@@ -24,7 +24,7 @@ parser.add_argument("--weight_decay", type=float, default=0.1)
 
 args = parser.parse_args()
 
-wandb.init(project="IndicBert_mlm_only_qa",  entity="nandinimundra" , name = f"FT_2_{args.batch_size}_{args.learning_rate}" )
+wandb.init(project="IndicBert_mlm_only_qa",  entity="your_entity" , name = f"FT_2_{args.batch_size}_{args.learning_rate}" )
 
 
 metric = load_metric("squad")
@@ -39,7 +39,7 @@ print(dataset_squad)
 #dataset_squad['validation'] = dataset_squad['validation'].shard(num_shards=100, index=0)
 #print(dataset_squad)
 model_name = 'ai4bharat/IndicBERT-MLM-only'
-tokenizer = AutoTokenizer.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/qa/tok_InBert_mlm_only/", use_auth_token=True)
+tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 max_length = 384
 stride = 128
 n_best_size = 20
@@ -268,7 +268,7 @@ def compute_metrics_2(p: EvalPrediction):
 
 
 
-model = AutoModelForQuestionAnswering.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/qa/model_InBert_mlm_only_qa_adap/", use_auth_token=True)
+model = AutoModelForQuestionAnswering.from_pretrained(model_name, use_auth_token=True)
 pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 wandb.log({"total_parameter": pytorch_total_params})
 
