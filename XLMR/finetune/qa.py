@@ -39,23 +39,23 @@ print(dataset_squad)
 #dataset_squad['validation'] = dataset_squad['validation'].shard(num_shards=100, index=0)
 #print(dataset_squad)
 if args.model_name == "indicbert":
-    wandb.init(project="Indicbert_mlm_only_xnli", entity="nandinimundra", name = f"{args.model_name}_{args.batch_size}_{args.learning_rate}")
+    wandb.init(project="Indicbert_mlm_only_xnli", entity="your_entity", name = f"{args.model_name}_{args.batch_size}_{args.learning_rate}")
     model_name = 'ai4bharat/IndicBERT-MLM-only'
     tokenizer = AutoTokenizer.from_pretrained("ai4bharat/IndicBERT-MLM-only", use_auth_token=True)
 
     model = AutoModelForQuestionAnswering.from_pretrained(
-        "/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/xnli/model_InBert_mlm_only_xnli_adap/",
+        model_name,
     )
 
 elif args.model_name == "xlmr-b":
-    wandb.init(project="xlmr_base_qa", entity="nandinimundra", name = f"its_ok_{args.model_name}_{args.batch_size}_{args.learning_rate}")
+    wandb.init(project="xlmr_base_qa", entity="your_entity", name = f"its_ok_{args.model_name}_{args.batch_size}_{args.learning_rate}")
     #model_name = 'ai4bharat/IndicBERT-MLM-only'
     tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-base", use_auth_token=True)
     model = AutoModelForQuestionAnswering.from_pretrained(
         "xlm-roberta-base"
     )
 elif args.model_name == "xlmr-l":
-    wandb.init(project="xlmr_large_qa", entity="nandinimundra", name = f"its_ok_{args.model_name}_{args.batch_size}_{args.learning_rate}")
+    wandb.init(project="xlmr_large_qa", entity="your_entity", name = f"its_ok_{args.model_name}_{args.batch_size}_{args.learning_rate}")
     #model_name = 'ai4bharat/IndicBERT-MLM-only'
     tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-large", use_auth_token=True)
     
