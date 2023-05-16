@@ -139,8 +139,8 @@ label_list = dataset['train'].unique("label")
 label_list.sort()  # Let's sort it for determinism
 label_to_id = {v: i for i, v in enumerate(label_list)}
 
-tokenizer = AutoTokenizer.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/copa/tok_InBert_mlm_only/", use_auth_token=True)
-model = AutoModelForMultipleChoice.from_pretrained("/nlsasfs/home/ai4bharat/nandinim/nandini/new_finetune/copa/model_InBert_mlm_only_copa/", use_auth_token=True)
+tokenizer = AutoTokenizer.from_pretrained("ai4bharat/IndicBERTv2-MLM-only", use_auth_token=True)
+model = AutoModelForMultipleChoice.from_pretrained("ai4bharat/IndicBERTv2-MLM-only", use_auth_token=True)
 
 
 if args.adapter_type == "houlsby":
@@ -267,7 +267,7 @@ trainer = Trainer(
     callbacks = [EarlyStoppingCallback(early_stopping_patience= 3 )]
     # callbacks=[earlystoppingcallback]
 )
-#model.load_state_dict(torch.load("/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/copa/callback_64_houlsby_3/checkpoint-17000/pytorch_model.bin" ))
+
 
 #trainer.add_callback(AdapterDropTrainerCallback())
 if args.adap_drop == "AD":
@@ -276,7 +276,7 @@ if args.adap_drop == "AD":
 trainer.train()
 
 trainer.evaluate()
-model.save_adapter(f"/nlsasfs/home/ai4bharat/nandinim/nandini/new_adaptertune/adapter_fusion/copa_its_ok", "pfeiffer_adapter")
+model.save_adapter(f"/copa_its_ok", "pfeiffer_adapter")
 
 dataset_as = load_dataset("ai4bharat/IndicCOPA",'translation-as', use_auth_token=True)
 dataset_bn = load_dataset("ai4bharat/IndicCOPA",'translation-bn', use_auth_token=True)
